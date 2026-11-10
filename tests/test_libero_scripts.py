@@ -33,6 +33,18 @@ class ReplayTests(unittest.TestCase):
         self.assertEqual(args.max_frames, 3)
         self.assertIsNone(replay.episode_selection("all"))
 
+    def test_playback_order(self):
+        original = ["demo_0", "demo_1", "demo_2"]
+        with patch.object(replay.random, "shuffle", side_effect=lambda items: items.reverse()) as shuffle:
+            self.assertEqual(replay.playback_order(original), list(reversed(original)))
+            shuffle.assert_called_once()
+        self.assertEqual(original, ["demo_0", "demo_1", "demo_2"])
+        with patch.object(replay.random, "shuffle") as shuffle:
+            self.assertEqual(replay.playback_order(original, no_random=True), original)
+            shuffle.assert_not_called()
+        self.assertFalse(replay.build_parser().parse_args([]).no_random)
+        self.assertTrue(replay.build_parser().parse_args(["--no-random"]).no_random)
+
     def test_invalid_options(self):
         for option in (["--fps", "0"], ["--speed", "nan"], ["--max-frames", "0"], ["--episode", "-1"]):
             with self.subTest(option=option), patch("sys.stderr", new=io.StringIO()), self.assertRaises(SystemExit):

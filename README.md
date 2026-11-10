@@ -51,7 +51,15 @@ uv run python scripts/replay_libero.py --list
 
 A unique filename substring or full HDF5 filename selects a task. Default is the
 first downloaded task and episode 0. Each episode opens a new viewer; closing the
-window stops the entire run. Native MuJoCo viewer controls allow camera and
+window or pressing **Q** (with the viewer focused) stops the entire run.
+By default, selected tasks and episodes within each task play in random order,
+without repetition; frames within an episode always remain chronological.
+Add `--no-random` for filename-sorted tasks and numerically ordered episodes
+(`demo_0`, `demo_1`, …); explicit episode lists then preserve your supplied order.
+Selection is unchanged: the default still selects only the first task and episode 0.
+Use `--task all --episode all` to shuffle all downloaded tasks and episodes.
+`--list` remains sorted regardless of playback randomization.
+Native MuJoCo viewer controls allow camera and
 visualization interaction; the free camera starts near `agentview`, with zoom,
 rotation, and pan enabled. Run from the repo root;
 `--data-dir` overrides the dataset directory. GUI needs a working desktop/display.

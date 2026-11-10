@@ -12,6 +12,7 @@ import importlib.util
 import json
 import math
 import os
+import random
 from pathlib import Path
 import sys
 import tempfile
@@ -55,6 +56,8 @@ def build_parser():
     parser.add_argument("--task", help="unique filename substring, HDF5 path, or 'all' (default: first task)")
     parser.add_argument("--episode", "--episodes", type=episode_selection, default=["demo_0"],
                         help="episode number/name, comma-separated numbers, or all (default: 0)")
+    parser.add_argument("--no-random", action="store_true",
+                        help="disable default task/episode shuffling; preserve sequential or supplied order")
     parser.add_argument("--list", action="store_true", help="list selected tasks and episode lengths, then exit")
     parser.add_argument("--fps", type=positive_float, default=20.0, help="recorded frame rate (default: 20)")
     parser.add_argument("--speed", type=positive_float, default=1.0, help="playback multiplier")
@@ -88,6 +91,13 @@ def episode_names(data, selected=None):
             raise ValueError(f"Episodes not found: {', '.join(sorted(missing))}")
         names = list(selected)
     return names
+
+
+def playback_order(items, no_random=False):
+    ordered = list(items)
+    if not no_random:
+        random.shuffle(ordered)
+    return ordered
 
 
 def text(value):
@@ -164,13 +174,21 @@ def replay(args, tasks):
     root = libero_root()
     budget = args.max_frames or (100 if args.headless else math.inf)
     count = 0
+    from threading import Event
+    quit_requested = Event()
+
+    def on_key(keycode):
+        # GLFW uses uppercase key codes regardless of Shift state.
+        if keycode in (ord("Q"), ord("q")):
+            quit_requested.set()
+
     with isolated_libero_config(root, args.data_dir):
-        for task in tasks:
+        for task in playback_order(tasks, args.no_random):
             with h5py.File(task, "r") as file:
                 if "data" not in file:
                     raise ValueError(f"{task}: missing data group")
                 data = file["data"]
-                for name in episode_names(data, args.episode):
+                for name in playback_order(episode_names(data, args.episode), args.no_random):
                     episode = data[name]
                     if "states" not in episode:
                         raise ValueError(f"{task.name}/{name}: missing states")
@@ -193,7 +211,9 @@ def replay(args, tasks):
                             context = nullcontext(None)
                         else:
                             import mujoco.viewer
-                            context = mujoco.viewer.launch_passive(sim.model._model, sim.data._data)
+                            context = mujoco.viewer.launch_passive(
+                                sim.model._model, sim.data._data, key_callback=on_key
+                            )
                         print(f"Playing {task.name}/{name}: {len(states)} recorded states", flush=True)
                         with context as viewer:
                             if viewer is not None:
@@ -218,7 +238,7 @@ def replay(args, tasks):
                                     viewer.cam.elevation = np.degrees(np.arcsin(np.clip(forward[2], -1, 1)))
                             deadline = time.monotonic()
                             for state in states:
-                                if viewer is not None and not viewer.is_running():
+                                if quit_requested.is_set() or (viewer is not None and not viewer.is_running()):
                                     return count
                                 with viewer.lock() if viewer is not None else nullcontext():
                                     sim.set_state_from_flattened(state)
