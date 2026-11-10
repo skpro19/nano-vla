@@ -205,8 +205,17 @@ def replay(args, tasks):
                                     viewer.opt.geomgroup[1] = 1
                                 camera_id = mujoco.mj_name2id(sim.model._model, mujoco.mjtObj.mjOBJ_CAMERA, "agentview")
                                 if camera_id >= 0:
-                                    viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
-                                    viewer.cam.fixedcamid = camera_id
+                                    # Start near agentview, but use a free camera so
+                                    # mouse/trackpad navigation remains available.
+                                    import numpy as np
+                                    rotation = sim.data._data.cam_xmat[camera_id].reshape(3, 3)
+                                    forward = -rotation[:, 2]
+                                    viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
+                                    viewer.cam.fixedcamid = -1
+                                    viewer.cam.distance = 1.0
+                                    viewer.cam.lookat[:] = sim.data._data.cam_xpos[camera_id] + forward
+                                    viewer.cam.azimuth = np.degrees(np.arctan2(forward[1], forward[0]))
+                                    viewer.cam.elevation = np.degrees(np.arcsin(np.clip(forward[2], -1, 1)))
                             deadline = time.monotonic()
                             for state in states:
                                 if viewer is not None and not viewer.is_running():

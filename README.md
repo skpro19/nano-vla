@@ -52,7 +52,8 @@ uv run python scripts/replay_libero.py --list
 A unique filename substring or full HDF5 filename selects a task. Default is the
 first downloaded task and episode 0. Each episode opens a new viewer; closing the
 window stops the entire run. Native MuJoCo viewer controls allow camera and
-visualization interaction; initial camera is `agentview`. Run from the repo root;
+visualization interaction; the free camera starts near `agentview`, with zoom,
+rotation, and pan enabled. Run from the repo root;
 `--data-dir` overrides the dataset directory. GUI needs a working desktop/display.
 
 Playback restores the episode XML (repairing historical asset paths) and each
