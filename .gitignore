@@ -13,3 +13,7 @@ wheels/
 datasets/
 third_party/
 .pytest_cache/
+
+# Local notes and scratch docs
+ISSUES.md
+docs/
