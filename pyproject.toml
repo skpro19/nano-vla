@@ -1,0 +1,25 @@
+[project]
+name = "nano-vla"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "libero",
+    "robosuite==1.4.0",
+    "mujoco==2.3.7",
+    "numpy==1.22.4",
+    "numba==0.57.1",
+    "scipy==1.10.1",
+    "matplotlib==3.5.3",
+    "opencv-python==4.6.0.66",
+    "bddl==1.0.1",
+    "gym==0.25.2",
+    "cloudpickle==2.1.0",
+    "h5py==3.10.0",
+    "PyYAML==6.0.2",
+    "termcolor==2.4.0",
+]
+
+[tool.uv.sources]
+libero = { path = "third_party/LIBERO", editable = true }
