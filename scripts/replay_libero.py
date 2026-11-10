@@ -232,7 +232,9 @@ def replay(args, tasks):
                                     forward = -rotation[:, 2]
                                     viewer.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
                                     viewer.cam.fixedcamid = -1
-                                    viewer.cam.distance = 1.0
+                                    # Pull back from the recorded camera for a wider
+                                    # overview, retaining the same look-at point.
+                                    viewer.cam.distance = 1.6
                                     viewer.cam.lookat[:] = sim.data._data.cam_xpos[camera_id] + forward
                                     viewer.cam.azimuth = np.degrees(np.arctan2(forward[1], forward[0]))
                                     viewer.cam.elevation = np.degrees(np.arcsin(np.clip(forward[2], -1, 1)))
