@@ -4,6 +4,7 @@ import io
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -11,14 +12,17 @@ import xml.etree.ElementTree as ET
 
 
 def load_script(name):
-    path = Path(__file__).resolve().parents[1] / "scripts" / f"{name}.py"
+    scripts_dir = Path(__file__).resolve().parents[1] / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    path = scripts_dir / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-replay = load_script("replay_libero")
+replay = load_script("replay_in_mujoco")
 downloader = load_script("download_libero")
 
 
