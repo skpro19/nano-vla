@@ -24,6 +24,12 @@ dependencies = [
     "lerobot[smolvla,training]",
 ]
 
+[dependency-groups]
+notebook = [
+    "ipykernel==7.4.0",
+    "jupyterlab==4.6.6",
+]
+
 [tool.uv.sources]
 libero = { path = "third_party/LIBERO", editable = true }
 torch = { index = "pytorch-cu126" }
