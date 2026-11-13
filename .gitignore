@@ -23,7 +23,9 @@ third_party/
 *.nbconvert.ipynb
 
 # Local notebooks
-notebooks/
+notebooks/*
+# Exception: the LIBERO exploration notebook is tracked on purpose.
+!notebooks/01_explore_libero.ipynb
 
 # Local notes and scratch docs
 ISSUES.md
